@@ -34,7 +34,7 @@ async def on_message(message):
                 inline=False)
             em.add_field(
                 name="\nMiscellaneous Tools",
-                value="hello\nthanks",
+                value="hello\nthanks\nremind",
                 inline=False)
             await message.channel.send(embed=em)
             return
@@ -89,7 +89,12 @@ async def on_message(message):
                     "Deletes a word from the list of restricted words by using the associating index. To find the index of a specific word, call `!restricted list` first.", 
                     "`[index]` - Valid index", 
                     "!restricted"
-                ]
+                ],
+                "remind" : [
+                    "`[amount of time and unit] [reminder]` - Reminds the user to do something.", 
+                    "Displays a confirmation mention of the reminder to the channel. After the given time, the user is mentioned and reminded of their given reminder.", 
+                    "`[amount_of_time_and_unit]` - any positive integer value with one of the following units of time: [s, m, h, d] trailing behind with no space delimiter\n`[reminder]` - a task or goal or something to be reminded about",
+                    "N/A"]
             }
             if command in commands:
                 info = commands[command]
@@ -229,7 +234,8 @@ async def on_message(message):
         "!disable": disable,
         "!help": help,
         "!8ball": eight_ball,
-        "!restricted": restricted
+        "!restricted": restricted,
+        "!remind": remind
     }
 
     if parsed_message[0] in commands:
