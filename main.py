@@ -24,9 +24,14 @@ async def on_message(message):
                 "Use `!help [command]`for extended information on a command.",
                 color=0xADD8E6,
                 inline=False)
-            em.add_field(name="\nModeration Tools",
-                         value="disable",
-                         inline=False)
+            em.add_field(
+                name ="Fun Tools", 
+                value = "8ball", 
+                inline = False)
+            em.add_field(
+                name="\nModeration Tools",
+                value="restricted\ndisable",
+                inline=False)
             em.add_field(
                 name="\nMiscellaneous Tools",
                 value="hello\nthanks",
@@ -59,7 +64,32 @@ async def on_message(message):
                 "8ball": [
                     " `[question]` Ask the magic 8 ball a question and get a response.", 
                     "Ask the magic 8 ball a question (or anything else) and get a response from a list of possible responses",
-                     "`[question]` - Anything the user inputs (although makes more sense to be a question)", "N/A"],
+                     "`[question]` - Anything the user inputs (although makes more sense to be a question)", "N/A"
+                ],
+                "restricted": [
+                    " - A moderation tool to create restricted words.",
+                    "Using the associated commands, admins can create a list of restricted words. Whenever a user sends a message, the message is parsed for any restricted words and if detected, the message is deleted and a warning is displayed.", 
+                    "N/A", 
+                    "!restricted list\n!restricted add `[word]`\n!restricted delete `[index]`"
+                ],
+                "restricted list": [
+                    " - Displays the list of restricted words.", 
+                    "Displays the list of restricted words of the server with associated index. If a restricted word is said by any user, that message is deleted and a warning is issued.", 
+                    "N/A", 
+                    "!restricted"
+                ],
+                "restricted add": [
+                    " `[word]` - Adds a word to the list of restricted words.", 
+                    "Adds a word to the list of restricted words. If a user says a restricted word, that message is deleted and a warning is issued.", 
+                    "`[word]` - any word (or number technically)", 
+                    "!restricted"
+                ],
+                "restricted delete": [
+                    " `[index]` -  Deletes a word from the list of restricted words.", 
+                    "Deletes a word from the list of restricted words by using the associating index. To find the index of a specific word, call `!restricted list` first.", 
+                    "`[index]` - Valid index", 
+                    "!restricted"
+                ]
             }
             if command in commands:
                 info = commands[command]
@@ -133,6 +163,35 @@ async def on_message(message):
         warning = Embed(title = "@{}".format(message.author), description = "||{}||".format(message.content), color = 0x008080)
         await message.channel.send(embed=warning)
 
+    async def remind():
+        def convert(time):
+            # seconds, minutes, hours, or days
+            time_units = ['s', 'm', 'h', 'd']
+            # Values in seconds
+            time_dict = {"s": 1, "m": 60, "h": 3600, "d": 3600*24}
+            unit = time[-1]
+            if unit not in time_units:
+                return -1
+            try:
+                amount = int(time[:-1])
+            except:
+                return -2
+            # Amount of time in seconds
+            return amount * time_dict[unit]
+
+        if len(parsed_message) <= 2:
+            await message.channel.send("**Warning**: Arguments were not entered corrently. Please use `!help remind` for more information.")
+            return
+        time = (parsed_message[1])
+        reminder = " ".join(parsed_message[2:])
+        converted_time = convert(time)
+        if converted_time < 0:
+            await message.channel.send("**Warning**: Time was not entered corrently. Please use `!help remind` for more information.")
+            return
+        await message.channel.send(f"I'll remind you to **{reminder}** in **{time}**.")
+        await asyncio.sleep(converted_time)
+        await message.channel.send(f"{message.author.mention} Remember to **{reminder}**!")
+
     async def hello():
         await message.channel.send("Hello! It\'s nice to see you!")
 
@@ -155,8 +214,6 @@ async def on_message(message):
     channel = message.channel
     author = str(message.author).split('#')[0]  
     if message.author == client.user: return
-
-    parsed_message = mc.split()
 
     parsed_message = mc.split()
     if "restricted" in db:
