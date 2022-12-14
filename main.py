@@ -34,7 +34,7 @@ async def on_message(message):
                 inline=False)
             em.add_field(
                 name="\nMiscellaneous Tools",
-                value="hello\nthanks\nremind\nweather",
+                value="hello\nthanks\nremind\ntranslate",
                 inline=False)
             await message.channel.send(embed=em)
             return
@@ -95,11 +95,11 @@ async def on_message(message):
                     "Displays a confirmation mention of the reminder to the channel. After the given time, the user is mentioned and reminded of their given reminder.", 
                     "`[amount_of_time_and_unit]` - any positive integer value with one of the following units of time: [s, m, h, d] trailing behind with no space delimiter\n`[reminder]` - a task or goal or something to be reminded about",
                     "N/A"],
-                "weather": [
-                    "`[City Name]` - Displays the current weather in a city.", 
-                    "Displays the current weather in a city as well as current conditions such as rainy or clear skies. The temperature is displayed in fahrenheit.", 
-                    "`[City Name]` - A valid city", 
-                    "N/A"]
+                "translate": [
+                    "`[message]` - Displays the Spanish translation of an English message.", 
+                    "Displays the Spanish translation of a message of an English message.", 
+                    "`[message]` - an english phrase", 
+                    "N/A"],
             }
             if command in commands:
                 info = commands[command]
@@ -220,30 +220,15 @@ async def on_message(message):
         eight_ball_responses = ["Yes", "No", "Definitely", "Signs point to yes", "Better not tell you now", "It is doubtful", "Do not rely on it"]
         await message.channel.send(random.choice(eight_ball_responses))
 
-    async def weather():
-        city = " ".join(parsed_message[1:])
-        url = 'https://www.metaweather.com'
-        location_response = requests.get(url + '/api/location/search/?query=' + city)
-        if(location_response.status_code == 200):
-            location_data = location_response.json()
-            if len(location_data) < 1:
-                await message.channel.send("Sorry, I couldn't find that city.")
-                return
-            city_search_result = location_data[0]["title"]
-            weather_response = requests.get(url+ '/api/location/' + str(location_data[0]["woeid"]))
-            weather_data = weather_response.json()
-            location_weather = weather_data["consolidated_weather"][0]
-            weather_state_name = location_weather["weather_state_name"]
-            weather_state_abbr = location_weather["weather_state_abbr"]
-            weather_temp = (location_weather["the_temp"])*(9/5)+32
-            icon = url + '/static/img/weather/png/64/'+weather_state_abbr+'.png'
-
-            weather_embed = Embed(title=city_search_result, description=str(round(weather_temp)) + "° F " + "and "+ weather_state_name, color=Color.orange())
-            print(icon)
-            weather_embed.set_thumbnail(url=icon)
-            await message.channel.send(embed=weather_embed)
+    async def translate():
+        message_array = mc.split(' ')
+        source_text = " ".join(message_array[1:])
+        target_data = requests.post('https://translate.argosopentech.com/translate', data={'q':source_text, 'source':'en', 'target':'es'})
+        if target_data.status_code == 200:
+            target_text = target_data.json()
+            await message.channel.send(target_text["translatedText"].capitalize())
         else:
-            await message.channel.send("Sorry, something went wrong.")
+            print("Sorry, we couln't translate your message.")
 
     mc = message.content
     channel = message.channel
@@ -265,7 +250,7 @@ async def on_message(message):
         "!8ball": eight_ball,
         "!restricted": restricted,
         "!remind": remind,
-        "!weather": weather
+        "!translate": translate
     }
 
     if parsed_message[0] in commands:
